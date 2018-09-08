@@ -8,10 +8,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.math.BigDecimal;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -19,10 +23,10 @@ import static org.junit.Assert.assertEquals;
 public class UserControllerTest {
 
     @Autowired
-    private TestRestTemplate testRestTemplate;
+    private MockMvc mvc;
 
     @Autowired
-    private ApplicationUserRepository applicationUserRepository;
+    private TestRestTemplate testRestTemplate;
 
     private HttpHeaders headers = new HttpHeaders();
 
@@ -30,14 +34,10 @@ public class UserControllerTest {
         return "http://localhost:8080" + uri;
     }
 
-    /*@Before
-    public void initialDataForTest() {
-        applicationUserRepository.save(new ApplicationUser("user01", "password", "0123456789", new BigDecimal(18000)));
-        applicationUserRepository.save(new ApplicationUser("user02", "password", "9876543210", new BigDecimal(35000)));
-    }*/
-
     @Test
-    public void testSignUpNoUsernameCase() throws Exception {
+    public void testRegisterNoUsernameCase() throws Exception {
+        System.out.println("Test method testRegisterNoUsernameCase()");
+
         ApplicationUser applicationUser = new ApplicationUser();
         applicationUser.setPassword("password");
         applicationUser.setMobileNo("0123456789");
@@ -54,7 +54,9 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testSignUpNoUsernameAndPasswordCase() throws Exception {
+    public void testRegisterNoUsernameAndPasswordCase() throws Exception {
+        System.out.println("Test method testRegisterNoUsernameAndPasswordCase()");
+
         ApplicationUser applicationUser = new ApplicationUser();
         applicationUser.setMobileNo("0123456789");
         applicationUser.setSalary(new BigDecimal(10000));
@@ -70,7 +72,9 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testSignUpNoMobileNoCase() throws Exception {
+    public void testRegisterNoMobileNoCase() throws Exception {
+        System.out.println("Test method testRegisterNoMobileNoCase()");
+
         ApplicationUser applicationUser = new ApplicationUser();
         applicationUser.setUsername("admin");
         applicationUser.setPassword("password");
@@ -87,7 +91,9 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testSignUpRejectCase() throws Exception {
+    public void testRegisterRejectCase() throws Exception {
+        System.out.println("Test method testRegisterRejectCase()");
+
         ApplicationUser applicationUser = new ApplicationUser();
         applicationUser.setUsername("admin");
         applicationUser.setPassword("password");
@@ -105,7 +111,9 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testSignUpSuccessCase() throws Exception {
+    public void testRegisterSuccessCase() throws Exception {
+        System.out.println("Test method testRegisterSuccessCase()");
+
         ApplicationUser applicationUser = new ApplicationUser();
         applicationUser.setUsername("admin");
         applicationUser.setPassword("password");
@@ -122,52 +130,40 @@ public class UserControllerTest {
 
     @Test
     public void testLogin() throws Exception {
-        ApplicationUser applicationUser = new ApplicationUser();
-        applicationUser.setUsername("admin");
-        applicationUser.setPassword("password");
+        System.out.println("Test method testLogin()");
 
-        HttpEntity<ApplicationUser> entity = new HttpEntity<>(applicationUser, headers);
-        ResponseEntity<String> response = testRestTemplate.exchange(
-                createURLWithPort("/login"),
-                HttpMethod.POST, entity, String.class);
-
-        System.out.println("response.getHeaders(): " + response.getHeaders());
-        System.out.println("response.getBody(): " + response.getBody());
-    }
-
-    /*@Test
-    public void testSignMemberTypeSilverCase() throws Exception {
         ApplicationUser applicationUser = new ApplicationUser();
         applicationUser.setUsername("admin");
         applicationUser.setPassword("password");
         applicationUser.setMobileNo("0123456789");
-        applicationUser.setSalary(new BigDecimal(20000));
+        applicationUser.setSalary(new BigDecimal(18000));
 
-        HttpEntity<ApplicationUser> entity = new HttpEntity<>(applicationUser, headers);
-        ResponseEntity<String> response = testRestTemplate.exchange(
-                createURLWithPort("/users/sign-up"),
-                HttpMethod.POST, entity, String.class);
+        ResponseEntity<String> response = null;
+
+        HttpEntity<ApplicationUser> entityRegister = new HttpEntity<>(applicationUser, headers);
+        response = testRestTemplate.exchange(
+                createURLWithPort("/users/register"),
+                HttpMethod.POST, entityRegister, String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        System.out.println("response.getBody(): " + response.getBody());
+        HttpEntity<ApplicationUser> entityLogin = new HttpEntity<>(applicationUser, headers);
+        response = testRestTemplate.exchange(
+                createURLWithPort("/login"),
+                HttpMethod.POST, entityLogin, String.class);
 
-        if (response.getStatusCode().equals(HttpStatus.OK)) {
-            response = testRestTemplate.exchange(
-                    createURLWithPort("/users"),
-                    HttpMethod.GET, entity, String.class);
+        System.out.println("response.getHeaders(): " + response.getHeaders());
+        System.out.println("response.getHeaders().Authorization: " + response.getHeaders().get("Authorization"));
 
-            System.out.println("response.getBody(): " + response.getBody());
+        assertNotNull(response.getHeaders().get("Authorization"));
+    }
 
-            Gson gson = new Gson();
-            ApplicationUser e = gson.fromJson(response.getBody(), ApplicationUser.class);
-            assertEquals("Silver", e.getMemberType());
-        }
-    }*/
+    @Test
+    public void shouldNotAllowAccessToUnauthenticatedUsers() throws Exception {
+        System.out.println("Test method shouldNotAllowAccessToUnauthenticatedUsers()");
 
-    /*@Test
-    public void getUsers() throws Exception {
-        List<ApplicationUser> applicationUsers = testRestTemplate.getForObject("/users/sign-up", List.class);
-        assertEquals(0, applicationUsers.size());
-    }*/
+        mvc.perform(MockMvcRequestBuilders.get(createURLWithPort("/users"))).andExpect(status().isForbidden());
+    }
+
+
 }
