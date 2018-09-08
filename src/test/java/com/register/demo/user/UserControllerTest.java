@@ -37,6 +37,56 @@ public class UserControllerTest {
     }*/
 
     @Test
+    public void testSignUpNoUsernameCase() throws Exception {
+        ApplicationUser applicationUser = new ApplicationUser();
+        applicationUser.setPassword("password");
+        applicationUser.setMobileNo("0123456789");
+        applicationUser.setSalary(new BigDecimal(10000));
+
+        HttpEntity<ApplicationUser> entity = new HttpEntity<>(applicationUser, headers);
+        ResponseEntity<String> response = testRestTemplate.exchange(
+                createURLWithPort("/users/register"),
+                HttpMethod.POST, entity, String.class);
+
+        String expected = "{\"messageCode\":\"10\",\"messageDesc\":\"Username or password cannot be null or empty.\"}";
+
+        assertEquals(expected, response.getBody());
+    }
+
+    @Test
+    public void testSignUpNoUsernameAndPasswordCase() throws Exception {
+        ApplicationUser applicationUser = new ApplicationUser();
+        applicationUser.setMobileNo("0123456789");
+        applicationUser.setSalary(new BigDecimal(10000));
+
+        HttpEntity<ApplicationUser> entity = new HttpEntity<>(applicationUser, headers);
+        ResponseEntity<String> response = testRestTemplate.exchange(
+                createURLWithPort("/users/register"),
+                HttpMethod.POST, entity, String.class);
+
+        String expected = "{\"messageCode\":\"10\",\"messageDesc\":\"Username or password cannot be null or empty.\"}";
+
+        assertEquals(expected, response.getBody());
+    }
+
+    @Test
+    public void testSignUpNoMobileNoCase() throws Exception {
+        ApplicationUser applicationUser = new ApplicationUser();
+        applicationUser.setUsername("admin");
+        applicationUser.setPassword("password");
+        applicationUser.setSalary(new BigDecimal(10000));
+
+        HttpEntity<ApplicationUser> entity = new HttpEntity<>(applicationUser, headers);
+        ResponseEntity<String> response = testRestTemplate.exchange(
+                createURLWithPort("/users/register"),
+                HttpMethod.POST, entity, String.class);
+
+        String expected = "{\"messageCode\":\"10\",\"messageDesc\":\"Mobile number cannot be null or empty.\"}";
+
+        assertEquals(expected, response.getBody());
+    }
+
+    @Test
     public void testSignUpRejectCase() throws Exception {
         ApplicationUser applicationUser = new ApplicationUser();
         applicationUser.setUsername("admin");
@@ -46,7 +96,7 @@ public class UserControllerTest {
 
         HttpEntity<ApplicationUser> entity = new HttpEntity<>(applicationUser, headers);
         ResponseEntity<String> response = testRestTemplate.exchange(
-                createURLWithPort("/users/sign-up"),
+                createURLWithPort("/users/register"),
                 HttpMethod.POST, entity, String.class);
 
         String expected = "{\"messageCode\":\"10\",\"messageDesc\":\"Reject, salary is null or less than 15,000\"}";
@@ -64,7 +114,7 @@ public class UserControllerTest {
 
         HttpEntity<ApplicationUser> entity = new HttpEntity<>(applicationUser, headers);
         ResponseEntity<String> response = testRestTemplate.exchange(
-                createURLWithPort("/users/sign-up"),
+                createURLWithPort("/users/register"),
                 HttpMethod.POST, entity, String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());

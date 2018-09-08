@@ -63,7 +63,7 @@ mvn spring-boot:run
 There are three endpoints for the demo:
 
 ```
-/users/sign-up - authentication endpoint with unrestricted access
+/users/register - authentication endpoint with unrestricted access
 /login - authentication endpoint with username and password
 /users - an endpoint that is restricted to authorized users (a valid JWT token must be present in the request header)
 ```
