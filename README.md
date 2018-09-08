@@ -65,3 +65,7 @@ curl -i -H "Content-Type: application/json" -X POST -d '{
 curl -H "Authorization: Bearer xxx.yyy.zzz" http://localhost:8080/users
 ```
 
+
+--
+
+Please feel free to send me some feedback or questions!
